@@ -80,7 +80,7 @@ export class ProfileEntity {
   pix_key_type: string; // 'CPF', 'CNPJ', 'EMAIL', 'PHONE'
 
   // Photos
-  @Column({ type: 'simple-array', default: [] })
+  @Column({ type: 'text', array: true, default: [] })
   photos: string[]; // URLs to photos
 
   @Column({ type: 'varchar', length: 255, nullable: true })
