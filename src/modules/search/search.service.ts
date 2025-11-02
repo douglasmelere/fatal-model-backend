@@ -134,58 +134,86 @@ export class SearchService {
     const sortBy = filters.sortBy || (hasDistanceFilter ? 'distance' : 'newest');
     const sortOrder = filters.sortOrder || (sortBy === 'distance' ? 'ASC' : 'DESC');
 
-    switch (sortBy) {
-      case 'distance':
-        if (hasDistanceFilter && filters.latitude !== undefined && filters.longitude !== undefined) {
-          // Sanitize coordinates to prevent SQL injection
-          const lat = parseFloat(filters.latitude.toString());
-          const lon = parseFloat(filters.longitude.toString());
-          
-          if (!isNaN(lat) && !isNaN(lon)) {
-            // Calculate distance in ORDER BY clause using direct values
-            // PostgreSQL will handle this safely as numeric values
-            query = query
-              .orderBy(
-                `6371 * acos(
-                  LEAST(1.0, 
-                    sin(radians(${lat})) * sin(radians(profile.latitude)) + 
-                    cos(radians(${lat})) * cos(radians(profile.latitude)) * 
-                    cos(radians(profile.longitude) - radians(${lon}))
-                  )
-                )`,
-                'ASC',
-              );
-          } else {
-            // Invalid coordinates, fallback to newest
-            query = query.orderBy('profile.created_at', sortOrder);
-          }
-        } else {
-          // Fallback to newest if distance sorting requested but no coordinates provided
-          query = query.orderBy('profile.created_at', sortOrder);
-        }
-        break;
-      case 'rating':
-        query = query.orderBy('profile.average_rating', sortOrder);
-        break;
-      case 'price':
-        query = query.orderBy(
-          `(profile.pricing->>'hourly_rate')::numeric`,
-          sortOrder,
-        );
-        break;
-      case 'views':
-        query = query.orderBy('profile.total_views', sortOrder);
-        break;
-      case 'newest':
-      default:
+    // Handle distance sorting separately (requires calculation after fetch)
+    if (sortBy === 'distance' && hasDistanceFilter && filters.latitude !== undefined && filters.longitude !== undefined) {
+      const lat = parseFloat(filters.latitude.toString());
+      const lon = parseFloat(filters.longitude.toString());
+      
+      if (isNaN(lat) || isNaN(lon)) {
+        // Invalid coordinates, fallback to newest
         query = query.orderBy('profile.created_at', sortOrder);
-        break;
+      } else {
+        // For distance, we'll fetch all matching and sort in memory
+        // (This is less efficient but works reliably with TypeORM)
+        query = query.orderBy('profile.average_rating', 'DESC'); // Temporary order
+      }
+    } else {
+      // Normal sorting
+      switch (sortBy) {
+        case 'rating':
+          query = query.orderBy('profile.average_rating', sortOrder);
+          break;
+        case 'price':
+          query = query.orderBy(
+            `(profile.pricing->>'hourly_rate')::numeric`,
+            sortOrder,
+          );
+          break;
+        case 'views':
+          query = query.orderBy('profile.total_views', sortOrder);
+          break;
+        case 'newest':
+        default:
+          query = query.orderBy('profile.created_at', sortOrder);
+          break;
+      }
     }
 
-    const [data, total] = await query
+    // Get total count first (before pagination)
+    const total = await query.getCount();
+
+    // For distance sorting, fetch more and sort in memory
+    if (sortBy === 'distance' && hasDistanceFilter && filters.latitude !== undefined && filters.longitude !== undefined) {
+      const lat = parseFloat(filters.latitude.toString());
+      const lon = parseFloat(filters.longitude.toString());
+      
+      if (!isNaN(lat) && !isNaN(lon)) {
+        // Fetch all matching profiles (up to reasonable limit)
+        const allProfiles = await query.limit(1000).getMany();
+        
+        // Calculate distance and sort
+        const profilesWithDistance = allProfiles
+          .map((profile) => {
+            if (profile.latitude && profile.longitude) {
+              // Haversine formula
+              const R = 6371; // Earth's radius in km
+              const dLat = ((profile.latitude - lat) * Math.PI) / 180;
+              const dLon = ((profile.longitude - lon) * Math.PI) / 180;
+              const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos((lat * Math.PI) / 180) *
+                  Math.cos((profile.latitude * Math.PI) / 180) *
+                  Math.sin(dLon / 2) *
+                  Math.sin(dLon / 2);
+              const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+              const distance = R * c;
+              return { profile, distance };
+            }
+            return null;
+          })
+          .filter((item): item is { profile: ProfileEntity; distance: number } => item !== null)
+          .sort((a, b) => a.distance - b.distance) // Sort by distance ASC
+          .slice(offset, offset + limit)
+          .map((item) => item.profile);
+        
+        return { data: profilesWithDistance, total };
+      }
+    }
+
+    const data = await query
       .skip(offset)
       .take(limit)
-      .getManyAndCount();
+      .getMany();
 
     return { data, total };
   }
