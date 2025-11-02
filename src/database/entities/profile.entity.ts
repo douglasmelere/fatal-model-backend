@@ -58,7 +58,7 @@ export class ProfileEntity {
   ethnicity: string;
 
   // Services and Pricing
-  @Column({ type: 'simple-array', default: [] })
+  @Column({ type: 'text', array: true, default: [] })
   services_offered: string[];
 
   @Column({ type: 'jsonb', nullable: true })
