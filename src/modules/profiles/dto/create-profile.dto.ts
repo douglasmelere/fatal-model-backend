@@ -10,7 +10,8 @@ export class CreateProfileDto {
   bio?: string;
 
   @IsOptional()
-  @IsInt()
+  @IsNumber()
+  @Type(() => Number)
   age?: number;
 
   @IsOptional()
@@ -57,14 +58,7 @@ export class CreateProfileDto {
 
   @IsOptional()
   @IsObject()
-  pricing?: {
-    hourly_rate: number;
-    package_rates?: Record<string, number>;
-    minimum_duration?: number;
-    two_hours_rate?: number;
-    overnight_rate?: number;
-    [key: string]: any; // Allow additional pricing fields
-  };
+  pricing?: Record<string, any>; // Accept any JSON object to allow flexible pricing fields
 
   @IsOptional()
   @IsString()
