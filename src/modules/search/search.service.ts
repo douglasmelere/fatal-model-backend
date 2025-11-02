@@ -27,9 +27,11 @@ export class SearchService {
       .andWhere('user.status = :userStatus', { userStatus: UserStatus.ACTIVE });
 
     // Location filter (by city name) - works independently or together with coordinates
-    if (filters.location) {
+    // Support both 'location' and 'city' parameters (city is an alias)
+    const cityFilter = filters.location || filters.city;
+    if (cityFilter) {
       query = query.andWhere('profile.location ILIKE :location', {
-        location: `%${filters.location}%`,
+        location: `%${cityFilter}%`,
       });
     }
 

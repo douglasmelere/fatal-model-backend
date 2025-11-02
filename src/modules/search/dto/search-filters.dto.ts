@@ -7,6 +7,10 @@ export class SearchFiltersDto {
   location?: string;
 
   @IsOptional()
+  @IsString()
+  city?: string; // Alias for location
+
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
   latitude?: number;
