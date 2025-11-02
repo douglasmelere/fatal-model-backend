@@ -62,7 +62,7 @@ export class ProfilesService {
         body_type: createProfileDto.body_type,
         ethnicity: createProfileDto.ethnicity,
         services_offered: createProfileDto.services_offered || [],
-        pricing: createProfileDto.pricing,
+        pricing: createProfileDto.pricing as any, // Allow flexible pricing structure
         pix_key: createProfileDto.pix_key,
         pix_key_type: createProfileDto.pix_key_type,
         is_active: true,
