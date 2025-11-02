@@ -78,7 +78,7 @@ export class ProfilesService {
         pricing: createProfileDto.pricing as any, // Allow flexible pricing structure
         pix_key: createProfileDto.pix_key,
         pix_key_type: createProfileDto.pix_key_type,
-        is_active: true,
+        is_active: false, // Perfis começam inativos, devem ser ativados pelo admin
         is_verified: false,
       };
 
