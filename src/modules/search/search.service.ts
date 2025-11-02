@@ -136,16 +136,29 @@ export class SearchService {
 
     switch (sortBy) {
       case 'distance':
-        if (hasDistanceFilter) {
-          // Calculate distance in ORDER BY clause
-          const distanceOrder = `6371 * acos(
-            LEAST(1.0, 
-              sin(radians(:userLat)) * sin(radians(profile.latitude)) + 
-              cos(radians(:userLat)) * cos(radians(profile.latitude)) * 
-              cos(radians(profile.longitude) - radians(:userLon))
-            )
-          )`;
-          query = query.addOrderBy(distanceOrder, 'ASC'); // Closest first
+        if (hasDistanceFilter && filters.latitude !== undefined && filters.longitude !== undefined) {
+          // Sanitize coordinates to prevent SQL injection
+          const lat = parseFloat(filters.latitude.toString());
+          const lon = parseFloat(filters.longitude.toString());
+          
+          if (!isNaN(lat) && !isNaN(lon)) {
+            // Calculate distance in ORDER BY clause using direct values
+            // PostgreSQL will handle this safely as numeric values
+            query = query
+              .orderBy(
+                `6371 * acos(
+                  LEAST(1.0, 
+                    sin(radians(${lat})) * sin(radians(profile.latitude)) + 
+                    cos(radians(${lat})) * cos(radians(profile.latitude)) * 
+                    cos(radians(profile.longitude) - radians(${lon}))
+                  )
+                )`,
+                'ASC',
+              );
+          } else {
+            // Invalid coordinates, fallback to newest
+            query = query.orderBy('profile.created_at', sortOrder);
+          }
         } else {
           // Fallback to newest if distance sorting requested but no coordinates provided
           query = query.orderBy('profile.created_at', sortOrder);
