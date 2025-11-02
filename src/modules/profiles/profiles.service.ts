@@ -57,6 +57,9 @@ export class ProfilesService {
         }
       }
 
+      // Debug log
+      console.log('services_offered normalized:', servicesArray, 'Type:', typeof servicesArray, 'IsArray:', Array.isArray(servicesArray));
+
       const profileData: Partial<ProfileEntity> = {
         user_id: userId,
         display_name: createProfileDto.display_name,
@@ -79,7 +82,20 @@ export class ProfilesService {
         is_verified: false,
       };
 
+      // Ensure services_offered is properly formatted for TypeORM simple-array
       const profile = this.profilesRepository.create(profileData);
+      
+      // Double-check services_offered is an array
+      if (profile.services_offered && !Array.isArray(profile.services_offered)) {
+        profile.services_offered = [profile.services_offered as any];
+      }
+      
+      console.log('Profile before save:', {
+        services_offered: profile.services_offered,
+        type: typeof profile.services_offered,
+        isArray: Array.isArray(profile.services_offered)
+      });
+      
       const savedProfile = await this.profilesRepository.save(profile);
       return savedProfile;
     } catch (error) {
