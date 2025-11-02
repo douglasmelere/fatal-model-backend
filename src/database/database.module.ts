@@ -7,6 +7,8 @@ import {
   PaymentEntity,
   AppointmentEntity,
   ReviewEntity,
+  ConversationEntity,
+  MessageEntity,
 } from './entities';
 import { MigrationService } from './services/migration.service';
 
@@ -22,7 +24,7 @@ import { MigrationService } from './services/migration.service';
         username: configService.get('DATABASE_USER') || 'postgres',
         password: configService.get('DATABASE_PASSWORD') || 'postgres',
         database: configService.get('DATABASE_NAME') || 'fatal_model_db',
-        entities: [UserEntity, ProfileEntity, PaymentEntity, AppointmentEntity, ReviewEntity],
+        entities: [UserEntity, ProfileEntity, PaymentEntity, AppointmentEntity, ReviewEntity, ConversationEntity, MessageEntity],
         migrations: ['dist/database/migrations/*.js'],
         migrationsRun: false, // We'll run migrations manually via MigrationService
         migrationsTableName: 'typeorm_migrations',
@@ -37,6 +39,8 @@ import { MigrationService } from './services/migration.service';
       PaymentEntity,
       AppointmentEntity,
       ReviewEntity,
+      ConversationEntity,
+      MessageEntity,
     ]),
   ],
   providers: [MigrationService],

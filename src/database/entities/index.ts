@@ -3,3 +3,5 @@ export * from './profile.entity';
 export * from './payment.entity';
 export * from './appointment.entity';
 export * from './review.entity';
+export * from './conversation.entity';
+export * from './message.entity';

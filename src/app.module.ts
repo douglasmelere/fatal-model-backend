@@ -12,6 +12,7 @@ import { BookingsModule } from './modules/bookings/bookings.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { MessagesModule } from './modules/messages/messages.module';
 import { DebugController } from './debug.controller';
 import { appConfig, databaseConfig, redisConfig, jwtConfig, awsConfig, emailConfig, openaiConfig } from './config/app.config';
 
@@ -33,6 +34,7 @@ import { appConfig, databaseConfig, redisConfig, jwtConfig, awsConfig, emailConf
     ReviewsModule,
     NotificationsModule,
     AdminModule,
+    MessagesModule,
   ],
   controllers: [
     DebugController,

@@ -12,6 +12,7 @@ import {
 import { UserEntity } from './user.entity';
 import { PaymentEntity } from './payment.entity';
 import { ReviewEntity } from './review.entity';
+import { ConversationEntity } from './conversation.entity';
 
 export enum AppointmentStatus {
   PENDING = 'PENDING',
@@ -98,4 +99,9 @@ export class AppointmentEntity {
     nullable: true,
   })
   review: ReviewEntity;
+
+  @OneToOne(() => ConversationEntity, (conversation) => conversation.booking, {
+    nullable: true,
+  })
+  conversation: ConversationEntity;
 }

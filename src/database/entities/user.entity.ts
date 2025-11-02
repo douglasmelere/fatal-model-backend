@@ -12,6 +12,7 @@ import { ProfileEntity } from './profile.entity';
 import { AppointmentEntity } from './appointment.entity';
 import { PaymentEntity } from './payment.entity';
 import { ReviewEntity } from './review.entity';
+import { ConversationEntity } from './conversation.entity';
 
 export enum UserRole {
   CLIENT = 'CLIENT',
@@ -120,4 +121,16 @@ export class UserEntity {
 
   @OneToMany(() => ReviewEntity, (review) => review.escort)
   reviews_as_escort: ReviewEntity[];
+
+  @OneToMany(
+    () => ConversationEntity,
+    (conversation) => conversation.client,
+  )
+  conversations_as_client: ConversationEntity[];
+
+  @OneToMany(
+    () => ConversationEntity,
+    (conversation) => conversation.escort,
+  )
+  conversations_as_escort: ConversationEntity[];
 }
