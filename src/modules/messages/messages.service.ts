@@ -74,10 +74,16 @@ export class MessagesService {
       conversation = await this.conversationsRepository.save(conversation);
 
       // Carregar relações
-      conversation = await this.conversationsRepository.findOne({
+      const loadedConversation = await this.conversationsRepository.findOne({
         where: { id: conversation.id },
         relations: ['client', 'escort', 'booking'],
       });
+
+      if (!loadedConversation) {
+        throw new NotFoundException('Conversation not found after creation');
+      }
+
+      conversation = loadedConversation;
     }
 
     return conversation;
@@ -145,10 +151,16 @@ export class MessagesService {
     });
 
     // Carregar relações para retornar
-    return this.messagesRepository.findOne({
+    const messageWithRelations = await this.messagesRepository.findOne({
       where: { id: savedMessage.id },
       relations: ['sender', 'conversation'],
     });
+
+    if (!messageWithRelations) {
+      throw new NotFoundException('Message not found after creation');
+    }
+
+    return messageWithRelations;
   }
 
   /**
