@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
   ConversationEntity,
   MessageEntity,
@@ -9,7 +11,6 @@ import {
 import { MessagesService } from './messages.service';
 import { MessagesController } from './messages.controller';
 import { MessagesGateway } from './messages.gateway';
-import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -19,7 +20,16 @@ import { JwtModule } from '@nestjs/jwt';
       AppointmentEntity,
       UserEntity,
     ]),
-    JwtModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET') || configService.get('jwt.secret') || configService.get('jwt')?.secret,
+        signOptions: {
+          expiresIn: configService.get('JWT_EXPIRATION') || configService.get('jwt.expiresIn') || '3600s',
+        },
+      }),
+    }),
   ],
   controllers: [MessagesController],
   providers: [MessagesService, MessagesGateway],
