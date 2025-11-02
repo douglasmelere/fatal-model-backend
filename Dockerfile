@@ -8,7 +8,7 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
 
-RUN npm install -g pnpm && pnpm install --frozen-lockfile && npm install -g @nestjs/cli
+RUN npm install -g pnpm && pnpm install && npm install -g @nestjs/cli
 
 COPY . .
 
@@ -24,7 +24,7 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
 
-RUN npm install -g pnpm && pnpm install --prod --frozen-lockfile
+RUN npm install -g pnpm && pnpm install --prod
 
 # Clean up build dependencies
 RUN apk del python3 make g++
