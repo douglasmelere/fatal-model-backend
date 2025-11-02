@@ -1,4 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 
@@ -7,6 +8,7 @@ export class MigrationService implements OnModuleInit {
   private readonly logger = new Logger(MigrationService.name);
 
   constructor(
+    @InjectDataSource()
     private readonly dataSource: DataSource,
     private readonly configService: ConfigService,
   ) {}
