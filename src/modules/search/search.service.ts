@@ -22,7 +22,8 @@ export class SearchService {
       .createQueryBuilder('profile')
       .innerJoin('profile.user', 'user') // join explícito com entidade User
       .where('profile.is_active = :isActive', { isActive: true })
-      .andWhere('profile.is_verified = :isVerified', { isVerified: true })
+      // Removido filtro de is_verified para permitir que perfis novos apareçam
+      // .andWhere('profile.is_verified = :isVerified', { isVerified: true })
       .andWhere('user.role = :escortRole', { escortRole: 'ESCORT' })
       .andWhere('user.status = :userStatus', { userStatus: UserStatus.ACTIVE });
 
@@ -235,7 +236,8 @@ export class SearchService {
     const query = this.profilesRepository
       .createQueryBuilder('profile')
       .where('profile.is_active = :isActive', { isActive: true })
-      .andWhere('profile.is_verified = :isVerified', { isVerified: true })
+      // Removido filtro de is_verified para permitir que perfis novos apareçam
+      // .andWhere('profile.is_verified = :isVerified', { isVerified: true })
       .andWhere(
         '(profile.display_name ILIKE :keyword OR profile.bio ILIKE :keyword OR profile.services_offered::text ILIKE :keyword)',
         { keyword: `%${keyword}%` },
@@ -259,7 +261,8 @@ export class SearchService {
       .createQueryBuilder('profile')
       .innerJoin('profile.user', 'user')
       .where('profile.is_active = :isActive', { isActive: true })
-      .andWhere('profile.is_verified = :isVerified', { isVerified: true })
+      // Removido filtro de is_verified para permitir que perfis novos apareçam
+      // .andWhere('profile.is_verified = :isVerified', { isVerified: true })
       .andWhere('user.role = :escortRole', { escortRole: 'ESCORT' })
       .andWhere('user.status = :userStatus', { userStatus: UserStatus.ACTIVE })
       .andWhere('profile.average_rating > 0')
@@ -278,7 +281,8 @@ export class SearchService {
       .createQueryBuilder('profile')
       .innerJoin('profile.user', 'user')
       .where('profile.is_active = :isActive', { isActive: true })
-      .andWhere('profile.is_verified = :isVerified', { isVerified: true })
+      // Removido filtro de is_verified para permitir que perfis novos apareçam
+      // .andWhere('profile.is_verified = :isVerified', { isVerified: true })
       .andWhere('user.role = :escortRole', { escortRole: 'ESCORT' })
       .andWhere('user.status = :userStatus', { userStatus: UserStatus.ACTIVE })
       .orderBy('profile.total_views', 'DESC')
@@ -296,7 +300,8 @@ export class SearchService {
       .createQueryBuilder('profile')
       .innerJoin('profile.user', 'user')
       .where('profile.is_active = :isActive', { isActive: true })
-      .andWhere('profile.is_verified = :isVerified', { isVerified: true })
+      // Removido filtro de is_verified para permitir que perfis novos apareçam
+      // .andWhere('profile.is_verified = :isVerified', { isVerified: true })
       .andWhere('user.role = :escortRole', { escortRole: 'ESCORT' })
       .andWhere('user.status = :userStatus', { userStatus: UserStatus.ACTIVE })
       .orderBy('profile.created_at', 'DESC');
