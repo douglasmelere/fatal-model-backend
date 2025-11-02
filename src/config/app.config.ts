@@ -20,7 +20,7 @@ export const databaseConfig = registerAs('database', () => ({
   migrationsTableName: 'typeorm_migrations',
   synchronize: process.env.NODE_ENV === 'development',
   logging: process.env.NODE_ENV === 'development',
-  ssl: process.env.NODE_ENV === 'production',
+  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
 }));
 
 export const redisConfig = registerAs('redis', () => ({

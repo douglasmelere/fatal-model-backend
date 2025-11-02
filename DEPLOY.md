@@ -38,16 +38,32 @@ No painel do Easy Panel, adicione as seguintes variáveis de ambiente:
 #### Obrigatórias
 
 ```env
-# Database
+# Database - ⚠️ IMPORTANTE: Use 'postgres' como host, NÃO 'localhost'!
+DATABASE_HOST=postgres
+DATABASE_PORT=5432
+DATABASE_USER=postgres
 DATABASE_PASSWORD=sua_senha_segura_aqui
+DATABASE_NAME=fatal_model_db
+DATABASE_SSL=false
+
+# Redis - ⚠️ IMPORTANTE: Use 'redis' como host, NÃO 'localhost'!
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+# Application
+NODE_ENV=production
 
 # JWT
 JWT_SECRET=uma_chave_super_secreta_aleatoria_long
+JWT_EXPIRATION=3600
 JWT_REFRESH_SECRET=outra_chave_super_secreta_aleatoria_long
+JWT_REFRESH_EXPIRATION=604800
 
 # CORS (ajuste com seu domínio)
 CORS_ORIGIN=https://seu-frontend.com,https://www.seu-frontend.com
 ```
+
+**⚠️ ATENÇÃO**: Se você não configurar `DATABASE_HOST=postgres` e `REDIS_HOST=redis`, a aplicação vai tentar conectar em `localhost` e falhará com `ECONNREFUSED`!
 
 #### Opcionais (se você for usar)
 

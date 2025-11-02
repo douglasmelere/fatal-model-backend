@@ -49,6 +49,7 @@ services:
       NODE_ENV: production
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      DATABASE_SSL: false
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
       JWT_EXPIRATION: 3600
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-refresh-secret-change-in-production}
