@@ -50,10 +50,22 @@ export class ProfilesController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({
     status: 200,
-    description: 'Profile retrieved successfully',
+    description: 'Profile retrieved successfully or null if not found',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Profile not found (only for non-escort users)',
   })
   async getMyProfile(@CurrentUser() user: UserEntity) {
-    return this.profilesService.getProfileByUserId(user.id);
+    const profile = await this.profilesService.getProfileByUserId(user.id);
+    
+    // Se for cliente, não precisa ter perfil, retorna null
+    if (!profile && user.role !== UserRole.ESCORT) {
+      return null;
+    }
+    
+    // Se for escort e não tem perfil, ainda retorna null (frontend pode criar)
+    return profile || null;
   }
 
   @Get('verified')

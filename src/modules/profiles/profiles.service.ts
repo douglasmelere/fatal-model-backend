@@ -41,26 +41,59 @@ export class ProfilesService {
       throw new BadRequestException('Profile already exists for this user');
     }
 
-    const profile = this.profilesRepository.create({
-      user_id: userId,
-      ...createProfileDto,
-      services_offered: createProfileDto.services_offered || [], // Garante campo presente
-    });
+    // Validar campos obrigatórios
+    if (!createProfileDto.display_name || createProfileDto.display_name.trim() === '') {
+      throw new BadRequestException('display_name is required');
+    }
 
-    return this.profilesRepository.save(profile);
+    try {
+      const profile = this.profilesRepository.create({
+        user_id: userId,
+        display_name: createProfileDto.display_name,
+        bio: createProfileDto.bio || null,
+        age: createProfileDto.age || null,
+        location: createProfileDto.location || null,
+        height: createProfileDto.height || null,
+        weight: createProfileDto.weight || null,
+        hair_color: createProfileDto.hair_color || null,
+        eye_color: createProfileDto.eye_color || null,
+        body_type: createProfileDto.body_type || null,
+        ethnicity: createProfileDto.ethnicity || null,
+        services_offered: createProfileDto.services_offered || [],
+        pricing: createProfileDto.pricing || null,
+        pix_key: createProfileDto.pix_key || null,
+        pix_key_type: createProfileDto.pix_key_type || null,
+        is_active: true,
+        is_verified: false,
+      });
+
+      return await this.profilesRepository.save(profile);
+    } catch (error) {
+      // Log do erro para debug
+      console.error('Error creating profile:', error);
+      
+      // Se for erro de validação do TypeORM, retornar mensagem mais clara
+      if (error.code === '23505') { // Unique violation
+        throw new BadRequestException('Profile already exists for this user');
+      }
+      
+      if (error.code === '23502') { // Not null violation
+        throw new BadRequestException(`Missing required field: ${error.column}`);
+      }
+      
+      throw new BadRequestException(
+        error.message || 'Failed to create profile. Please check your data and try again.'
+      );
+    }
   }
 
-  async getProfileByUserId(userId: string): Promise<ProfileEntity> {
+  async getProfileByUserId(userId: string): Promise<ProfileEntity | null> {
     const profile = await this.profilesRepository.findOne({
       where: { user_id: userId },
       relations: ['user'],
     });
 
-    if (!profile) {
-      throw new NotFoundException('Profile not found');
-    }
-
-    return profile;
+    return profile || null;
   }
 
   async getProfileById(profileId: string): Promise<ProfileEntity> {
@@ -85,12 +118,22 @@ export class ProfilesService {
     updateProfileDto: UpdateProfileDto,
   ): Promise<ProfileEntity> {
     const profile = await this.getProfileByUserId(userId);
+    
+    if (!profile) {
+      throw new NotFoundException('Profile not found. Please create a profile first.');
+    }
+    
     Object.assign(profile, updateProfileDto);
     return this.profilesRepository.save(profile);
   }
 
   async addPhotos(userId: string, photoUrls: string[]): Promise<ProfileEntity> {
     const profile = await this.getProfileByUserId(userId);
+    
+    if (!profile) {
+      throw new NotFoundException('Profile not found. Please create a profile first.');
+    }
+    
     profile.photos = [...(profile.photos || []), ...photoUrls];
 
     if (!profile.main_photo && photoUrls.length > 0) {
@@ -102,6 +145,10 @@ export class ProfilesService {
 
   async setMainPhoto(userId: string, photoUrl: string): Promise<ProfileEntity> {
     const profile = await this.getProfileByUserId(userId);
+    
+    if (!profile) {
+      throw new NotFoundException('Profile not found. Please create a profile first.');
+    }
 
     if (!profile.photos.includes(photoUrl)) {
       throw new BadRequestException('Photo not found in profile');
@@ -116,6 +163,11 @@ export class ProfilesService {
     availability: Record<string, boolean>,
   ): Promise<ProfileEntity> {
     const profile = await this.getProfileByUserId(userId);
+    
+    if (!profile) {
+      throw new NotFoundException('Profile not found. Please create a profile first.');
+    }
+    
     profile.availability_calendar = availability;
     return this.profilesRepository.save(profile);
   }
@@ -126,6 +178,11 @@ export class ProfilesService {
     pixKeyType: string,
   ): Promise<ProfileEntity> {
     const profile = await this.getProfileByUserId(userId);
+    
+    if (!profile) {
+      throw new NotFoundException('Profile not found. Please create a profile first.');
+    }
+    
     profile.pix_key = pixKey;
     profile.pix_key_type = pixKeyType;
     return this.profilesRepository.save(profile);
@@ -213,12 +270,22 @@ export class ProfilesService {
 
   async deactivateProfile(userId: string): Promise<ProfileEntity> {
     const profile = await this.getProfileByUserId(userId);
+    
+    if (!profile) {
+      throw new NotFoundException('Profile not found');
+    }
+    
     profile.is_active = false;
     return this.profilesRepository.save(profile);
   }
 
   async activateProfile(userId: string): Promise<ProfileEntity> {
     const profile = await this.getProfileByUserId(userId);
+    
+    if (!profile) {
+      throw new NotFoundException('Profile not found');
+    }
+    
     profile.is_active = true;
     return this.profilesRepository.save(profile);
   }
