@@ -47,6 +47,16 @@ export class ProfilesService {
     }
 
     try {
+      // Normalize services_offered to always be an array
+      let servicesArray: string[] = [];
+      if (createProfileDto.services_offered) {
+        if (Array.isArray(createProfileDto.services_offered)) {
+          servicesArray = createProfileDto.services_offered.filter(v => v && typeof v === 'string');
+        } else if (typeof createProfileDto.services_offered === 'string') {
+          servicesArray = [createProfileDto.services_offered];
+        }
+      }
+
       const profileData: Partial<ProfileEntity> = {
         user_id: userId,
         display_name: createProfileDto.display_name,
@@ -61,11 +71,7 @@ export class ProfilesService {
         eye_color: createProfileDto.eye_color,
         body_type: createProfileDto.body_type,
         ethnicity: createProfileDto.ethnicity,
-        services_offered: Array.isArray(createProfileDto.services_offered)
-          ? createProfileDto.services_offered
-          : createProfileDto.services_offered
-          ? [createProfileDto.services_offered]
-          : [],
+        services_offered: servicesArray,
         pricing: createProfileDto.pricing as any, // Allow flexible pricing structure
         pix_key: createProfileDto.pix_key,
         pix_key_type: createProfileDto.pix_key_type,
