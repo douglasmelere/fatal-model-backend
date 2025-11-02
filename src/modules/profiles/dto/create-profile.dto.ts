@@ -61,6 +61,9 @@ export class CreateProfileDto {
     hourly_rate: number;
     package_rates?: Record<string, number>;
     minimum_duration?: number;
+    two_hours_rate?: number;
+    overnight_rate?: number;
+    [key: string]: any; // Allow additional pricing fields
   };
 
   @IsOptional()
