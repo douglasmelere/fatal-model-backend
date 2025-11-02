@@ -8,6 +8,7 @@ import {
   AppointmentEntity,
   ReviewEntity,
 } from './entities';
+import { MigrationService } from './services/migration.service';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import {
         database: configService.get('DATABASE_NAME') || 'fatal_model_db',
         entities: [UserEntity, ProfileEntity, PaymentEntity, AppointmentEntity, ReviewEntity],
         migrations: ['dist/database/migrations/*.js'],
-        migrationsRun: process.env.RUN_MIGRATIONS === 'true',
+        migrationsRun: false, // We'll run migrations manually via MigrationService
         migrationsTableName: 'typeorm_migrations',
         synchronize: process.env.NODE_ENV === 'development',
         logging: process.env.NODE_ENV === 'development',
@@ -38,6 +39,7 @@ import {
       ReviewEntity,
     ]),
   ],
+  providers: [MigrationService],
   exports: [TypeOrmModule],
 })
 export class DatabaseModule {}
