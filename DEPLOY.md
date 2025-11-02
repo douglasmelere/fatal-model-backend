@@ -45,6 +45,7 @@ DATABASE_USER=postgres
 DATABASE_PASSWORD=sua_senha_segura_aqui
 DATABASE_NAME=fatal_model_db
 DATABASE_SSL=false
+RUN_MIGRATIONS=true
 
 # Redis - ⚠️ IMPORTANTE: Use 'redis' como host, NÃO 'localhost'!
 REDIS_HOST=redis
@@ -102,6 +103,27 @@ OPENAI_API_KEY=sua_chave_openai
 2. Aguarde o build completar (pode levar alguns minutos na primeira vez)
 3. Verifique os logs para garantir que tudo iniciou corretamente
 
+## 🗄️ Database Migrations
+
+### Migrations Automáticas
+
+As migrations são executadas automaticamente quando:
+- `RUN_MIGRATIONS=true` está configurado (padrão em produção)
+- A aplicação inicia pela primeira vez
+
+Isso cria:
+- Todas as tabelas do banco de dados
+- Índices e foreign keys
+- Usuário admin inicial (`admin@duoclub.com.br`)
+
+### Verificar Status das Migrations
+
+Para verificar se as migrations foram executadas, verifique os logs da aplicação ou conecte ao banco:
+
+```sql
+SELECT * FROM typeorm_migrations;
+```
+
 ## ✅ Verificação Pós-Deploy
 
 Após o deploy, verifique se tudo está funcionando:
@@ -121,22 +143,40 @@ Acesse no navegador:
 https://seu-dominio.com/api/docs
 ```
 
-### 3. Criar Admin User
+### 3. Verificar Migrations
 
-Use o endpoint de debug para criar um admin:
+As migrations serão executadas automaticamente na primeira inicialização se `RUN_MIGRATIONS=true` estiver configurado. Isso irá:
+- Criar todas as tabelas do banco de dados
+- Criar o usuário admin inicial
+
+### 4. Admin Inicial
+
+O sistema cria automaticamente um usuário admin na primeira execução:
+
+- **Email**: `admin@duoclub.com.br`
+- **Senha padrão**: `admin123`
+- **Status**: Ativo e verificado
+
+> ⚠️ **IMPORTANTE**: Altere a senha padrão imediatamente após o primeiro login!
+
+Para alterar a senha, use o endpoint de alteração de senha ou faça login e atualize via perfil.
+
+### 5. Criar Admin Adicional (Opcional)
+
+Se precisar criar um admin adicional, use o endpoint de debug:
 
 ```bash
 curl -X POST https://seu-dominio.com/debug/create-admin \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "admin@fatalmodel.com",
-    "password": "Admin@123456",
+    "email": "admin2@duoclub.com.br",
+    "password": "SenhaSegura123!",
     "first_name": "Admin",
-    "last_name": "FatalModel"
+    "last_name": "DuoClub"
   }'
 ```
 
-> ⚠️ **Importante**: Após criar o admin, considere remover ou desabilitar os endpoints de debug em produção!
+> ⚠️ **Importante**: Após criar admins adicionais, considere remover ou desabilitar os endpoints de debug em produção!
 
 ## 🔐 Segurança em Produção
 

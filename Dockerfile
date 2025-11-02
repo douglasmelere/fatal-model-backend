@@ -33,4 +33,8 @@ COPY --from=builder /app/dist /app/dist
 
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+# Create entrypoint script to run migrations before starting app
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+CMD ["/app/docker-entrypoint.sh"]
