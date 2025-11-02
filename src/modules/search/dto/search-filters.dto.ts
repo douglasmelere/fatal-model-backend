@@ -19,6 +19,11 @@ export class SearchFiltersDto {
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
+  maxDistance?: number; // Maximum distance in kilometers
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
   minPrice?: number;
 
   @IsOptional()
