@@ -61,7 +61,11 @@ export class ProfilesService {
         eye_color: createProfileDto.eye_color,
         body_type: createProfileDto.body_type,
         ethnicity: createProfileDto.ethnicity,
-        services_offered: createProfileDto.services_offered || [],
+        services_offered: Array.isArray(createProfileDto.services_offered)
+          ? createProfileDto.services_offered
+          : createProfileDto.services_offered
+          ? [createProfileDto.services_offered]
+          : [],
         pricing: createProfileDto.pricing as any, // Allow flexible pricing structure
         pix_key: createProfileDto.pix_key,
         pix_key_type: createProfileDto.pix_key_type,

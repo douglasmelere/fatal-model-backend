@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsInt, IsArray, IsObject, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 export class CreateProfileDto {
   @IsString()
@@ -53,6 +53,13 @@ export class CreateProfileDto {
   ethnicity?: string;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    // Se vier como string, transforma em array
+    if (typeof value === 'string') return [value];
+    return [];
+  })
   @IsArray()
   @IsString({ each: true })
   services_offered?: string[];

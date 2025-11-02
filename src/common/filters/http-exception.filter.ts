@@ -18,21 +18,23 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     const exceptionResponse = exception.getResponse();
 
-    const message =
-      typeof exceptionResponse === 'object' &&
-      'message' in exceptionResponse
-        ? (exceptionResponse as any).message
-        : exception.message;
+    let message: string | string[] = exception.message;
+    let errors: any = undefined;
 
-    // Include validation errors if available
-    const errors = 
-      typeof exceptionResponse === 'object' &&
-      'errors' in exceptionResponse
-        ? (exceptionResponse as any).errors
-        : undefined;
+    if (typeof exceptionResponse === 'object') {
+      // NestJS ValidationPipe returns messages in 'message' property (can be array or string)
+      if ('message' in exceptionResponse) {
+        message = (exceptionResponse as any).message;
+      }
+      // Validation errors are in 'errors' property
+      if ('errors' in exceptionResponse) {
+        errors = (exceptionResponse as any).errors;
+      }
+    }
 
+    // Log full error details for debugging
     this.logger.error(
-      `HTTP Exception: ${status} - ${message}`,
+      `HTTP Exception: ${status} - ${JSON.stringify({ message, errors, exceptionResponse })}`,
       exception.stack,
     );
 
