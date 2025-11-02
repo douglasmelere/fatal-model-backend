@@ -24,16 +24,29 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? (exceptionResponse as any).message
         : exception.message;
 
+    // Include validation errors if available
+    const errors = 
+      typeof exceptionResponse === 'object' &&
+      'errors' in exceptionResponse
+        ? (exceptionResponse as any).errors
+        : undefined;
+
     this.logger.error(
       `HTTP Exception: ${status} - ${message}`,
       exception.stack,
     );
 
-    response.status(status).json({
+    const responseBody: any = {
       statusCode: status,
-      message: message || 'Internal Server Error',
+      message: Array.isArray(message) ? message : [message || 'Internal Server Error'],
       timestamp: new Date().toISOString(),
-    });
+    };
+
+    if (errors) {
+      responseBody.errors = errors;
+    }
+
+    response.status(status).json(responseBody);
   }
 }
 

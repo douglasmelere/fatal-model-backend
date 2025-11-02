@@ -54,6 +54,7 @@ export class CreateProfileDto {
 
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
   services_offered?: string[];
 
   @IsOptional()
