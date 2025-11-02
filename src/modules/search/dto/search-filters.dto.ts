@@ -9,6 +9,16 @@ export class SearchFiltersDto {
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  longitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
   minPrice?: number;
 
   @IsOptional()
@@ -45,7 +55,7 @@ export class SearchFiltersDto {
 
   @IsOptional()
   @IsString()
-  sortBy?: string; // 'rating', 'price', 'views', 'newest'
+  sortBy?: string; // 'rating', 'price', 'views', 'newest', 'distance'
 
   @IsOptional()
   @IsString()

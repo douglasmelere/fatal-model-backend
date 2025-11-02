@@ -26,11 +26,36 @@ export class SearchService {
       .andWhere('user.role = :escortRole', { escortRole: 'ESCORT' })
       .andWhere('user.status = :userStatus', { userStatus: UserStatus.ACTIVE });
 
-    // Location filter
-    if (filters.location) {
+    // Location filter (by city name)
+    if (filters.location && !filters.latitude && !filters.longitude) {
       query = query.andWhere('profile.location ILIKE :location', {
         location: `%${filters.location}%`,
       });
+    }
+
+    // Distance calculation (Haversine formula) - if latitude/longitude provided
+    let hasDistanceFilter = false;
+    if (filters.latitude !== undefined && filters.longitude !== undefined) {
+      // Add distance calculation using Haversine formula
+      // Distance in kilometers: 6371 * acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(lon2 - lon1))
+      const distanceFormula = `
+        6371 * acos(
+          LEAST(1.0, 
+            sin(radians(:userLat)) * sin(radians(profile.latitude)) + 
+            cos(radians(:userLat)) * cos(radians(profile.latitude)) * 
+            cos(radians(profile.longitude) - radians(:userLon))
+          )
+        )
+      `;
+      
+      query = query
+        .addSelect(distanceFormula, 'distance')
+        .setParameter('userLat', filters.latitude)
+        .setParameter('userLon', filters.longitude)
+        .andWhere('profile.latitude IS NOT NULL')
+        .andWhere('profile.longitude IS NOT NULL');
+      
+      hasDistanceFilter = true;
     }
 
     // Age range filter
@@ -103,10 +128,18 @@ export class SearchService {
     }
 
     // Sorting
-    const sortBy = filters.sortBy || 'newest';
-    const sortOrder = filters.sortOrder || 'DESC';
+    const sortBy = filters.sortBy || (hasDistanceFilter ? 'distance' : 'newest');
+    const sortOrder = filters.sortOrder || (sortBy === 'distance' ? 'ASC' : 'DESC');
 
     switch (sortBy) {
+      case 'distance':
+        if (hasDistanceFilter) {
+          query = query.orderBy('distance', 'ASC'); // Closest first
+        } else {
+          // Fallback to newest if distance sorting requested but no coordinates provided
+          query = query.orderBy('profile.created_at', sortOrder);
+        }
+        break;
       case 'rating':
         query = query.orderBy('profile.average_rating', sortOrder);
         break;
