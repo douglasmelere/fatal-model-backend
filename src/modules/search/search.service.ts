@@ -26,8 +26,8 @@ export class SearchService {
       .andWhere('user.role = :escortRole', { escortRole: 'ESCORT' })
       .andWhere('user.status = :userStatus', { userStatus: UserStatus.ACTIVE });
 
-    // Location filter (by city name)
-    if (filters.location && !filters.latitude && !filters.longitude) {
+    // Location filter (by city name) - works independently or together with coordinates
+    if (filters.location) {
       query = query.andWhere('profile.location ILIKE :location', {
         location: `%${filters.location}%`,
       });
@@ -36,14 +36,17 @@ export class SearchService {
     // Distance calculation (Haversine formula) - if latitude/longitude provided
     let hasDistanceFilter = false;
     if (filters.latitude !== undefined && filters.longitude !== undefined) {
-      query = query
-        .andWhere('profile.latitude IS NOT NULL')
-        .andWhere('profile.longitude IS NOT NULL')
-        .setParameter('userLat', filters.latitude)
+      query = query.setParameter('userLat', filters.latitude)
         .setParameter('userLon', filters.longitude);
       
-      // Filter by maximum distance if provided
+      // Only require coordinates if maxDistance is specified
+      // Otherwise, show profiles with AND without coordinates
       if (filters.maxDistance !== undefined && filters.maxDistance > 0) {
+        // Filter only profiles with coordinates within maxDistance
+        query = query
+          .andWhere('profile.latitude IS NOT NULL')
+          .andWhere('profile.longitude IS NOT NULL');
+        
         // Haversine formula in WHERE clause to filter by max distance
         const distanceFilter = `6371 * acos(
           LEAST(1.0, 
@@ -57,6 +60,8 @@ export class SearchService {
           maxDistance: filters.maxDistance,
         });
       }
+      // If no maxDistance, don't filter by coordinates - show all matching profiles
+      // (they'll be sorted by distance if they have coordinates, or by rating otherwise)
       
       hasDistanceFilter = true;
     }
@@ -182,6 +187,8 @@ export class SearchService {
         const allProfiles = await query.limit(1000).getMany();
         
         // Calculate distance and sort
+        // Profiles WITH coordinates: calculate distance
+        // Profiles WITHOUT coordinates: put at end with distance = Infinity
         const profilesWithDistance = allProfiles
           .map((profile) => {
             if (profile.latitude && profile.longitude) {
@@ -199,10 +206,10 @@ export class SearchService {
               const distance = R * c;
               return { profile, distance };
             }
-            return null;
+            // Profile without coordinates - put at end
+            return { profile, distance: Infinity };
           })
-          .filter((item): item is { profile: ProfileEntity; distance: number } => item !== null)
-          .sort((a, b) => a.distance - b.distance) // Sort by distance ASC
+          .sort((a, b) => a.distance - b.distance) // Sort by distance ASC (Infinity goes to end)
           .slice(offset, offset + limit)
           .map((item) => item.profile);
         

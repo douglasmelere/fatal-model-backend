@@ -1,4 +1,5 @@
-import { IsString, IsOptional, IsInt, IsArray, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsInt, IsArray, IsObject, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateProfileDto {
   @IsString()
@@ -15,6 +16,16 @@ export class CreateProfileDto {
   @IsOptional()
   @IsString()
   location?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  longitude?: number;
 
   @IsOptional()
   @IsString()
