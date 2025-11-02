@@ -47,7 +47,7 @@ export class ProfilesService {
     }
 
     try {
-      const profile = this.profilesRepository.create({
+      const profileData: Partial<ProfileEntity> = {
         user_id: userId,
         display_name: createProfileDto.display_name,
         bio: createProfileDto.bio || null,
@@ -65,9 +65,11 @@ export class ProfilesService {
         pix_key_type: createProfileDto.pix_key_type || null,
         is_active: true,
         is_verified: false,
-      });
+      };
 
-      return await this.profilesRepository.save(profile);
+      const profile = this.profilesRepository.create(profileData);
+      const savedProfile = await this.profilesRepository.save(profile);
+      return savedProfile;
     } catch (error) {
       // Log do erro para debug
       console.error('Error creating profile:', error);
