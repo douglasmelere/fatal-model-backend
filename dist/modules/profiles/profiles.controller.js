@@ -29,7 +29,11 @@ let ProfilesController = class ProfilesController {
         return this.profilesService.createProfile(user.id, createProfileDto);
     }
     async getMyProfile(user) {
-        return this.profilesService.getProfileByUserId(user.id);
+        const profile = await this.profilesService.getProfileByUserId(user.id);
+        if (!profile && user.role !== entities_1.UserRole.ESCORT) {
+            return null;
+        }
+        return profile || null;
     }
     async getVerifiedProfiles(limit = 10, offset = 0) {
         return this.profilesService.getVerifiedProfiles(limit, offset);
@@ -95,7 +99,11 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Get current user profile' }),
     (0, swagger_1.ApiResponse)({
         status: 200,
-        description: 'Profile retrieved successfully',
+        description: 'Profile retrieved successfully or null if not found',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'Profile not found (only for non-escort users)',
     }),
     __param(0, (0, decorators_1.CurrentUser)()),
     __metadata("design:type", Function),

@@ -2,6 +2,7 @@ import { ProfileEntity } from './profile.entity';
 import { AppointmentEntity } from './appointment.entity';
 import { PaymentEntity } from './payment.entity';
 import { ReviewEntity } from './review.entity';
+import { ConversationEntity } from './conversation.entity';
 export declare enum UserRole {
     CLIENT = "CLIENT",
     ESCORT = "ESCORT",
@@ -42,4 +43,6 @@ export declare class UserEntity {
     payments_as_escort: PaymentEntity[];
     reviews_as_client: ReviewEntity[];
     reviews_as_escort: ReviewEntity[];
+    conversations_as_client: ConversationEntity[];
+    conversations_as_escort: ConversationEntity[];
 }

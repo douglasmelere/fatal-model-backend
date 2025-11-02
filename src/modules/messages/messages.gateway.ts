@@ -40,11 +40,20 @@ export class MessagesGateway
 
   handleConnection(@ConnectedSocket() client: Socket) {
     const token =
-      client.handshake.auth.token ||
-      client.handshake.headers.authorization?.replace('Bearer ', '');
+      client.handshake.auth?.token ||
+      client.handshake.headers?.authorization?.replace('Bearer ', '') ||
+      client.handshake.query?.token;
+
+    this.logger.debug('Connection attempt:', {
+      hasAuthToken: !!client.handshake.auth?.token,
+      hasHeaderAuth: !!client.handshake.headers?.authorization,
+      hasQueryToken: !!client.handshake.query?.token,
+      tokenLength: token?.length || 0,
+    });
 
     if (!token) {
-      this.logger.warn('Client connected without token');
+      this.logger.warn('Client connected without token - disconnecting');
+      client.emit('error', { message: 'Authentication required' });
       client.disconnect();
       return;
     }
@@ -53,13 +62,31 @@ export class MessagesGateway
       const payload = this.jwtService.verify(token);
       const userId = payload.sub;
 
+      if (!userId) {
+        this.logger.warn('Token verified but no userId found in payload');
+        client.emit('error', { message: 'Invalid token: missing user ID' });
+        client.disconnect();
+        return;
+      }
+
       this.userSockets.set(userId, client.id);
       this.socketUsers.set(client.id, userId);
       client.join(`user_${userId}`);
 
       this.logger.log(`User ${userId} connected to messages with socket ${client.id}`);
+      
+      // Confirmar conexão para o cliente
+      client.emit('connected', { userId, socketId: client.id });
     } catch (error) {
-      this.logger.error('Invalid token:', error.message);
+      this.logger.error('Invalid token:', {
+        error: error.message,
+        name: error.name,
+        tokenPreview: token?.substring(0, 20) + '...',
+      });
+      client.emit('error', { 
+        message: 'Authentication failed',
+        error: error.message 
+      });
       client.disconnect();
     }
   }

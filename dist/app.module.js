@@ -21,6 +21,7 @@ const bookings_module_1 = require("./modules/bookings/bookings.module");
 const reviews_module_1 = require("./modules/reviews/reviews.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
 const admin_module_1 = require("./modules/admin/admin.module");
+const messages_module_1 = require("./modules/messages/messages.module");
 const debug_controller_1 = require("./debug.controller");
 const app_config_1 = require("./config/app.config");
 let AppModule = class AppModule {
@@ -45,6 +46,7 @@ exports.AppModule = AppModule = __decorate([
             reviews_module_1.ReviewsModule,
             notifications_module_1.NotificationsModule,
             admin_module_1.AdminModule,
+            messages_module_1.MessagesModule,
         ],
         controllers: [
             debug_controller_1.DebugController,

@@ -1,5 +1,9 @@
 export declare class SearchFiltersDto {
     location?: string;
+    city?: string;
+    latitude?: number;
+    longitude?: number;
+    maxDistance?: number;
     minPrice?: number;
     maxPrice?: number;
     minAge?: number;

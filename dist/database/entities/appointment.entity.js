@@ -14,6 +14,7 @@ const typeorm_1 = require("typeorm");
 const user_entity_1 = require("./user.entity");
 const payment_entity_1 = require("./payment.entity");
 const review_entity_1 = require("./review.entity");
+const conversation_entity_1 = require("./conversation.entity");
 var AppointmentStatus;
 (function (AppointmentStatus) {
     AppointmentStatus["PENDING"] = "PENDING";
@@ -45,6 +46,7 @@ let AppointmentEntity = class AppointmentEntity {
     escort;
     payment;
     review;
+    conversation;
 };
 exports.AppointmentEntity = AppointmentEntity;
 __decorate([
@@ -140,6 +142,12 @@ __decorate([
     }),
     __metadata("design:type", review_entity_1.ReviewEntity)
 ], AppointmentEntity.prototype, "review", void 0);
+__decorate([
+    (0, typeorm_1.OneToOne)(() => conversation_entity_1.ConversationEntity, (conversation) => conversation.booking, {
+        nullable: true,
+    }),
+    __metadata("design:type", conversation_entity_1.ConversationEntity)
+], AppointmentEntity.prototype, "conversation", void 0);
 exports.AppointmentEntity = AppointmentEntity = __decorate([
     (0, typeorm_1.Entity)('appointments'),
     (0, typeorm_1.Index)(['escort_id', 'scheduled_date', 'status']),

@@ -32,6 +32,8 @@ export declare class AuthService {
             payments_as_escort: import("../../database/entities").PaymentEntity[];
             reviews_as_client: import("../../database/entities").ReviewEntity[];
             reviews_as_escort: import("../../database/entities").ReviewEntity[];
+            conversations_as_client: import("../../database/entities").ConversationEntity[];
+            conversations_as_escort: import("../../database/entities").ConversationEntity[];
         };
         accessToken: string;
         refreshToken: string;
@@ -60,6 +62,8 @@ export declare class AuthService {
             payments_as_escort: import("../../database/entities").PaymentEntity[];
             reviews_as_client: import("../../database/entities").ReviewEntity[];
             reviews_as_escort: import("../../database/entities").ReviewEntity[];
+            conversations_as_client: import("../../database/entities").ConversationEntity[];
+            conversations_as_escort: import("../../database/entities").ConversationEntity[];
         };
         accessToken: string;
         refreshToken: string;

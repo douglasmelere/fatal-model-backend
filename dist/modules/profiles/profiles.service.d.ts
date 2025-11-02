@@ -6,7 +6,7 @@ export declare class ProfilesService {
     private usersRepository;
     constructor(profilesRepository: Repository<ProfileEntity>, usersRepository: Repository<UserEntity>);
     createProfile(userId: string, createProfileDto: CreateProfileDto): Promise<ProfileEntity>;
-    getProfileByUserId(userId: string): Promise<ProfileEntity>;
+    getProfileByUserId(userId: string): Promise<ProfileEntity | null>;
     getProfileById(profileId: string): Promise<ProfileEntity>;
     updateProfile(userId: string, updateProfileDto: UpdateProfileDto): Promise<ProfileEntity>;
     addPhotos(userId: string, photoUrls: string[]): Promise<ProfileEntity>;

@@ -38,22 +38,52 @@ let ProfilesService = class ProfilesService {
         if (existingProfile) {
             throw new common_1.BadRequestException('Profile already exists for this user');
         }
-        const profile = this.profilesRepository.create({
-            user_id: userId,
-            ...createProfileDto,
-            services_offered: createProfileDto.services_offered || [],
-        });
-        return this.profilesRepository.save(profile);
+        if (!createProfileDto.display_name || createProfileDto.display_name.trim() === '') {
+            throw new common_1.BadRequestException('display_name is required');
+        }
+        try {
+            const profileData = {
+                user_id: userId,
+                display_name: createProfileDto.display_name,
+                bio: createProfileDto.bio,
+                age: createProfileDto.age,
+                location: createProfileDto.location,
+                latitude: createProfileDto.latitude,
+                longitude: createProfileDto.longitude,
+                height: createProfileDto.height,
+                weight: createProfileDto.weight,
+                hair_color: createProfileDto.hair_color,
+                eye_color: createProfileDto.eye_color,
+                body_type: createProfileDto.body_type,
+                ethnicity: createProfileDto.ethnicity,
+                services_offered: createProfileDto.services_offered || [],
+                pricing: createProfileDto.pricing,
+                pix_key: createProfileDto.pix_key,
+                pix_key_type: createProfileDto.pix_key_type,
+                is_active: true,
+                is_verified: false,
+            };
+            const profile = this.profilesRepository.create(profileData);
+            const savedProfile = await this.profilesRepository.save(profile);
+            return savedProfile;
+        }
+        catch (error) {
+            console.error('Error creating profile:', error);
+            if (error.code === '23505') {
+                throw new common_1.BadRequestException('Profile already exists for this user');
+            }
+            if (error.code === '23502') {
+                throw new common_1.BadRequestException(`Missing required field: ${error.column}`);
+            }
+            throw new common_1.BadRequestException(error.message || 'Failed to create profile. Please check your data and try again.');
+        }
     }
     async getProfileByUserId(userId) {
         const profile = await this.profilesRepository.findOne({
             where: { user_id: userId },
             relations: ['user'],
         });
-        if (!profile) {
-            throw new common_1.NotFoundException('Profile not found');
-        }
-        return profile;
+        return profile || null;
     }
     async getProfileById(profileId) {
         const profile = await this.profilesRepository.findOne({
@@ -69,11 +99,17 @@ let ProfilesService = class ProfilesService {
     }
     async updateProfile(userId, updateProfileDto) {
         const profile = await this.getProfileByUserId(userId);
+        if (!profile) {
+            throw new common_1.NotFoundException('Profile not found. Please create a profile first.');
+        }
         Object.assign(profile, updateProfileDto);
         return this.profilesRepository.save(profile);
     }
     async addPhotos(userId, photoUrls) {
         const profile = await this.getProfileByUserId(userId);
+        if (!profile) {
+            throw new common_1.NotFoundException('Profile not found. Please create a profile first.');
+        }
         profile.photos = [...(profile.photos || []), ...photoUrls];
         if (!profile.main_photo && photoUrls.length > 0) {
             profile.main_photo = photoUrls[0];
@@ -82,6 +118,9 @@ let ProfilesService = class ProfilesService {
     }
     async setMainPhoto(userId, photoUrl) {
         const profile = await this.getProfileByUserId(userId);
+        if (!profile) {
+            throw new common_1.NotFoundException('Profile not found. Please create a profile first.');
+        }
         if (!profile.photos.includes(photoUrl)) {
             throw new common_1.BadRequestException('Photo not found in profile');
         }
@@ -90,11 +129,17 @@ let ProfilesService = class ProfilesService {
     }
     async updateAvailability(userId, availability) {
         const profile = await this.getProfileByUserId(userId);
+        if (!profile) {
+            throw new common_1.NotFoundException('Profile not found. Please create a profile first.');
+        }
         profile.availability_calendar = availability;
         return this.profilesRepository.save(profile);
     }
     async updatePixKey(userId, pixKey, pixKeyType) {
         const profile = await this.getProfileByUserId(userId);
+        if (!profile) {
+            throw new common_1.NotFoundException('Profile not found. Please create a profile first.');
+        }
         profile.pix_key = pixKey;
         profile.pix_key_type = pixKeyType;
         return this.profilesRepository.save(profile);
@@ -159,11 +204,17 @@ let ProfilesService = class ProfilesService {
     }
     async deactivateProfile(userId) {
         const profile = await this.getProfileByUserId(userId);
+        if (!profile) {
+            throw new common_1.NotFoundException('Profile not found');
+        }
         profile.is_active = false;
         return this.profilesRepository.save(profile);
     }
     async activateProfile(userId) {
         const profile = await this.getProfileByUserId(userId);
+        if (!profile) {
+            throw new common_1.NotFoundException('Profile not found');
+        }
         profile.is_active = true;
         return this.profilesRepository.save(profile);
     }

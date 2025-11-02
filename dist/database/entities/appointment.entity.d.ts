@@ -1,6 +1,7 @@
 import { UserEntity } from './user.entity';
 import { PaymentEntity } from './payment.entity';
 import { ReviewEntity } from './review.entity';
+import { ConversationEntity } from './conversation.entity';
 export declare enum AppointmentStatus {
     PENDING = "PENDING",
     CONFIRMED = "CONFIRMED",
@@ -31,4 +32,5 @@ export declare class AppointmentEntity {
     escort: UserEntity;
     payment: PaymentEntity;
     review: ReviewEntity;
+    conversation: ConversationEntity;
 }

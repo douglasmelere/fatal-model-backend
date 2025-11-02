@@ -19,4 +19,6 @@ __exportStar(require("./profile.entity"), exports);
 __exportStar(require("./payment.entity"), exports);
 __exportStar(require("./appointment.entity"), exports);
 __exportStar(require("./review.entity"), exports);
+__exportStar(require("./conversation.entity"), exports);
+__exportStar(require("./message.entity"), exports);
 //# sourceMappingURL=index.js.map

@@ -15,6 +15,7 @@ const profile_entity_1 = require("./profile.entity");
 const appointment_entity_1 = require("./appointment.entity");
 const payment_entity_1 = require("./payment.entity");
 const review_entity_1 = require("./review.entity");
+const conversation_entity_1 = require("./conversation.entity");
 var UserRole;
 (function (UserRole) {
     UserRole["CLIENT"] = "CLIENT";
@@ -58,6 +59,8 @@ let UserEntity = class UserEntity {
     payments_as_escort;
     reviews_as_client;
     reviews_as_escort;
+    conversations_as_client;
+    conversations_as_escort;
 };
 exports.UserEntity = UserEntity;
 __decorate([
@@ -167,6 +170,14 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => review_entity_1.ReviewEntity, (review) => review.escort),
     __metadata("design:type", Array)
 ], UserEntity.prototype, "reviews_as_escort", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => conversation_entity_1.ConversationEntity, (conversation) => conversation.client),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "conversations_as_client", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => conversation_entity_1.ConversationEntity, (conversation) => conversation.escort),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "conversations_as_escort", void 0);
 exports.UserEntity = UserEntity = __decorate([
     (0, typeorm_1.Entity)('users'),
     (0, typeorm_1.Index)(['email'], { unique: true }),

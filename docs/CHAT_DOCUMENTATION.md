@@ -330,20 +330,49 @@ Authorization: Bearer <token>
 ```javascript
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:3000/messages', {
+// IMPORTANTE: Use o namespace '/messages' e envie o token no auth
+const socket = io('http://localhost:3333/messages', {
   auth: {
-    token: 'seu_jwt_token'
-  }
+    token: 'seu_jwt_token' // Token JWT obtido do login
+  },
+  transports: ['websocket', 'polling'], // Permitir fallback para polling
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
 });
 
 socket.on('connect', () => {
   console.log('Conectado ao WebSocket de mensagens');
 });
 
-socket.on('disconnect', () => {
-  console.log('Desconectado');
+socket.on('connected', (data) => {
+  console.log('Conexão confirmada pelo servidor:', data);
+  // data = { userId, socketId }
+});
+
+socket.on('error', (error) => {
+  console.error('Erro na conexão WebSocket:', error);
+  // error = { message: '...', error: '...' }
+});
+
+socket.on('disconnect', (reason) => {
+  console.log('Desconectado:', reason);
+  // Se reason for 'io server disconnect', significa que o servidor desconectou
+  // (geralmente por falta de autenticação)
+});
+
+socket.on('connect_error', (error) => {
+  console.error('Erro ao conectar:', error);
 });
 ```
+
+**⚠️ Importante:**
+- O namespace deve ser `/messages` (não apenas `/`)
+- O token JWT deve ser enviado em `auth.token`
+- Se o servidor desconectar (`io server disconnect`), verifique:
+  1. O token está sendo enviado corretamente?
+  2. O token é válido e não expirou?
+  3. O token contém `sub` (user ID) no payload?
 
 ---
 

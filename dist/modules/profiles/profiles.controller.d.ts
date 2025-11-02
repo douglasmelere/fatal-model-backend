@@ -5,7 +5,7 @@ export declare class ProfilesController {
     private profilesService;
     constructor(profilesService: ProfilesService);
     createProfile(user: UserEntity, createProfileDto: CreateProfileDto): Promise<import("../../database/entities").ProfileEntity>;
-    getMyProfile(user: UserEntity): Promise<import("../../database/entities").ProfileEntity>;
+    getMyProfile(user: UserEntity): Promise<import("../../database/entities").ProfileEntity | null>;
     getVerifiedProfiles(limit?: number, offset?: number): Promise<{
         data: import("../../database/entities").ProfileEntity[];
         total: number;

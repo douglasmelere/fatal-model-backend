@@ -3,6 +3,8 @@ export declare class CreateProfileDto {
     bio?: string;
     age?: number;
     location?: string;
+    latitude?: number;
+    longitude?: number;
     height?: string;
     weight?: string;
     hair_color?: string;

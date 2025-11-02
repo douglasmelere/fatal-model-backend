@@ -32,10 +32,32 @@ let SearchService = class SearchService {
             .andWhere('profile.is_verified = :isVerified', { isVerified: true })
             .andWhere('user.role = :escortRole', { escortRole: 'ESCORT' })
             .andWhere('user.status = :userStatus', { userStatus: entities_1.UserStatus.ACTIVE });
-        if (filters.location) {
+        const cityFilter = filters.location || filters.city;
+        if (cityFilter) {
             query = query.andWhere('profile.location ILIKE :location', {
-                location: `%${filters.location}%`,
+                location: `%${cityFilter}%`,
             });
+        }
+        let hasDistanceFilter = false;
+        if (filters.latitude !== undefined && filters.longitude !== undefined) {
+            query = query.setParameter('userLat', filters.latitude)
+                .setParameter('userLon', filters.longitude);
+            if (filters.maxDistance !== undefined && filters.maxDistance > 0) {
+                query = query
+                    .andWhere('profile.latitude IS NOT NULL')
+                    .andWhere('profile.longitude IS NOT NULL');
+                const distanceFilter = `6371 * acos(
+          LEAST(1.0, 
+            sin(radians(:userLat)) * sin(radians(profile.latitude)) + 
+            cos(radians(:userLat)) * cos(radians(profile.latitude)) * 
+            cos(radians(profile.longitude) - radians(:userLon))
+          )
+        ) <= :maxDistance`;
+                query = query.andWhere(distanceFilter, {
+                    maxDistance: filters.maxDistance,
+                });
+            }
+            hasDistanceFilter = true;
         }
         if (filters.minAge && filters.maxAge) {
             query = query.andWhere('profile.age BETWEEN :minAge AND :maxAge', {
@@ -89,27 +111,68 @@ let SearchService = class SearchService {
                 minRating: filters.minRating,
             });
         }
-        const sortBy = filters.sortBy || 'newest';
-        const sortOrder = filters.sortOrder || 'DESC';
-        switch (sortBy) {
-            case 'rating':
-                query = query.orderBy('profile.average_rating', sortOrder);
-                break;
-            case 'price':
-                query = query.orderBy(`(profile.pricing->>'hourly_rate')::numeric`, sortOrder);
-                break;
-            case 'views':
-                query = query.orderBy('profile.total_views', sortOrder);
-                break;
-            case 'newest':
-            default:
+        const sortBy = filters.sortBy || (hasDistanceFilter ? 'distance' : 'newest');
+        const sortOrder = filters.sortOrder || (sortBy === 'distance' ? 'ASC' : 'DESC');
+        if (sortBy === 'distance' && hasDistanceFilter && filters.latitude !== undefined && filters.longitude !== undefined) {
+            const lat = parseFloat(filters.latitude.toString());
+            const lon = parseFloat(filters.longitude.toString());
+            if (isNaN(lat) || isNaN(lon)) {
                 query = query.orderBy('profile.created_at', sortOrder);
-                break;
+            }
+            else {
+                query = query.orderBy('profile.average_rating', 'DESC');
+            }
         }
-        const [data, total] = await query
+        else {
+            switch (sortBy) {
+                case 'rating':
+                    query = query.orderBy('profile.average_rating', sortOrder);
+                    break;
+                case 'price':
+                    query = query.orderBy(`(profile.pricing->>'hourly_rate')::numeric`, sortOrder);
+                    break;
+                case 'views':
+                    query = query.orderBy('profile.total_views', sortOrder);
+                    break;
+                case 'newest':
+                default:
+                    query = query.orderBy('profile.created_at', sortOrder);
+                    break;
+            }
+        }
+        const total = await query.getCount();
+        if (sortBy === 'distance' && hasDistanceFilter && filters.latitude !== undefined && filters.longitude !== undefined) {
+            const lat = parseFloat(filters.latitude.toString());
+            const lon = parseFloat(filters.longitude.toString());
+            if (!isNaN(lat) && !isNaN(lon)) {
+                const allProfiles = await query.limit(1000).getMany();
+                const profilesWithDistance = allProfiles
+                    .map((profile) => {
+                    if (profile.latitude && profile.longitude) {
+                        const R = 6371;
+                        const dLat = ((profile.latitude - lat) * Math.PI) / 180;
+                        const dLon = ((profile.longitude - lon) * Math.PI) / 180;
+                        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                            Math.cos((lat * Math.PI) / 180) *
+                                Math.cos((profile.latitude * Math.PI) / 180) *
+                                Math.sin(dLon / 2) *
+                                Math.sin(dLon / 2);
+                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                        const distance = R * c;
+                        return { profile, distance };
+                    }
+                    return { profile, distance: Infinity };
+                })
+                    .sort((a, b) => a.distance - b.distance)
+                    .slice(offset, offset + limit)
+                    .map((item) => item.profile);
+                return { data: profilesWithDistance, total };
+            }
+        }
+        const data = await query
             .skip(offset)
             .take(limit)
-            .getManyAndCount();
+            .getMany();
         return { data, total };
     }
     async searchByKeyword(keyword, limit = 10, offset = 0) {
