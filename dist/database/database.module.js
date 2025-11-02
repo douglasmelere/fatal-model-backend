@@ -11,6 +11,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const config_1 = require("@nestjs/config");
 const entities_1 = require("./entities");
+const migration_service_1 = require("./services/migration.service");
 let DatabaseModule = class DatabaseModule {
 };
 exports.DatabaseModule = DatabaseModule;
@@ -28,9 +29,12 @@ exports.DatabaseModule = DatabaseModule = __decorate([
                     password: configService.get('DATABASE_PASSWORD') || 'postgres',
                     database: configService.get('DATABASE_NAME') || 'fatal_model_db',
                     entities: [entities_1.UserEntity, entities_1.ProfileEntity, entities_1.PaymentEntity, entities_1.AppointmentEntity, entities_1.ReviewEntity],
+                    migrations: ['dist/database/migrations/*.js'],
+                    migrationsRun: false,
+                    migrationsTableName: 'typeorm_migrations',
                     synchronize: process.env.NODE_ENV === 'development',
                     logging: process.env.NODE_ENV === 'development',
-                    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+                    ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
                 }),
             }),
             typeorm_1.TypeOrmModule.forFeature([
@@ -41,6 +45,7 @@ exports.DatabaseModule = DatabaseModule = __decorate([
                 entities_1.ReviewEntity,
             ]),
         ],
+        providers: [migration_service_1.MigrationService],
         exports: [typeorm_1.TypeOrmModule],
     })
 ], DatabaseModule);

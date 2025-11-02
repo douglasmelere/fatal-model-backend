@@ -43,17 +43,18 @@ export class MigrationService implements OnModuleInit {
       this.logger.log('DataSource initialized, checking for migrations...');
 
       // Check pending migrations
-      const pendingMigrations = await this.dataSource.showMigrations();
+      // showMigrations() returns true if there are pending migrations, false otherwise
+      // To get the actual list, we need to use runMigrations() which returns the executed migrations
+      const hasPendingMigrations = await this.dataSource.showMigrations();
       
-      if (!pendingMigrations || pendingMigrations.length === 0) {
+      if (!hasPendingMigrations) {
         this.logger.log('No pending migrations found - database is up to date');
         return;
       }
 
-      this.logger.log(`Found ${pendingMigrations.length} pending migration(s): ${pendingMigrations.join(', ')}`);
-      this.logger.log('Running migrations...');
+      this.logger.log('Found pending migrations, running...');
 
-      // Run migrations
+      // Run migrations - this will return the list of executed migrations
       const migrations = await this.dataSource.runMigrations();
       
       this.logger.log(`✅ Successfully ran ${migrations.length} migration(s)`);

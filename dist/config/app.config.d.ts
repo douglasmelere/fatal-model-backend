@@ -23,7 +23,9 @@ export declare const databaseConfig: (() => {
     migrationsTableName: string;
     synchronize: boolean;
     logging: boolean;
-    ssl: boolean;
+    ssl: {
+        rejectUnauthorized: boolean;
+    } | undefined;
 }) & import("@nestjs/config").ConfigFactoryKeyHost<{
     type: string;
     host: string;
@@ -36,7 +38,9 @@ export declare const databaseConfig: (() => {
     migrationsTableName: string;
     synchronize: boolean;
     logging: boolean;
-    ssl: boolean;
+    ssl: {
+        rejectUnauthorized: boolean;
+    } | undefined;
 }>;
 export declare const redisConfig: (() => {
     host: string;

@@ -21,7 +21,7 @@ exports.databaseConfig = (0, config_1.registerAs)('database', () => ({
     migrationsTableName: 'typeorm_migrations',
     synchronize: process.env.NODE_ENV === 'development',
     logging: process.env.NODE_ENV === 'development',
-    ssl: process.env.NODE_ENV === 'production',
+    ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
 }));
 exports.redisConfig = (0, config_1.registerAs)('redis', () => ({
     host: process.env.REDIS_HOST || 'localhost',
